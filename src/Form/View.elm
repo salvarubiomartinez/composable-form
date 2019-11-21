@@ -5,7 +5,7 @@ module Form.View exposing
     , custom, CustomConfig, FormConfig, TextFieldConfig, NumberFieldConfig, RangeFieldConfig
     , CheckboxFieldConfig, RadioFieldConfig, SelectFieldConfig
     , FormListConfig, FormListItemConfig
-    , MultiselectFieldConfig
+    , ImageFieldConfig, MultiselectFieldConfig
     )
 
 {-| This module provides helpers to render a [`Form`](Form#Form).
@@ -53,7 +53,8 @@ import Form.Base.TextField as TextField
 import Form.Error as Error exposing (Error)
 import Html exposing (Html)
 import Html.Attributes as Attributes
-import Html.Events as Events
+import Html.Events as Events exposing (onClick)
+import Image
 import Json.Decode
 import Multiselect
 import Set exposing (Set)
@@ -140,6 +141,7 @@ type alias ViewConfig values msg =
     , loading : String
     , validation : Validation
     , multiselectMsg : Multiselect.Msg -> (values -> Multiselect.Model) -> (Multiselect.Model -> values) -> msg
+    , imageMsg : Image.Msg -> (values -> Image.Model) -> (Image.Model -> values) -> msg
     }
 
 
@@ -177,6 +179,7 @@ type alias CustomConfig msg element =
     , radioField : RadioFieldConfig msg -> element
     , selectField : SelectFieldConfig msg -> element
     , multiselectField : MultiselectFieldConfig msg -> element
+    , imageField : ImageFieldConfig msg -> element
     , group : List element -> element
     , section : String -> List element -> element
     , formList : FormListConfig msg element -> element
@@ -329,6 +332,18 @@ type alias MultiselectFieldConfig msg =
     }
 
 
+type alias ImageFieldConfig msg =
+    { onChange : Image.Msg -> msg
+    , value : Image.Model
+    , disabled : Bool
+    , error : Maybe Error
+    , showError : Bool
+    , attributes :
+        { label : String
+        }
+    }
+
+
 {-| Describes how a form list should be rendered.
 
   - `forms` is a list containing the elements of the form list.
@@ -378,7 +393,7 @@ custom :
     -> Form values msg
     -> Model values
     -> element
-custom config { onChange, action, loading, validation, multiselectMsg } form_ model =
+custom config { onChange, action, loading, validation, multiselectMsg, imageMsg } form_ model =
     let
         { fields, result } =
             Form.fill form_ model.values
@@ -414,6 +429,7 @@ custom config { onChange, action, loading, validation, multiselectMsg } form_ mo
                 config
                 { onChange = \values -> onChange { model | values = values }
                 , multiselectMsg = multiselectMsg
+                , imageMsg = imageMsg
                 , onBlur = onBlur
                 , disabled = model.state == Loading
                 , showError = showError
@@ -456,6 +472,7 @@ type alias FieldConfig values msg =
     , disabled : Bool
     , showError : String -> Bool
     , multiselectMsg : Multiselect.Msg -> (values -> Multiselect.Model) -> (Multiselect.Model -> values) -> msg
+    , imageMsg : Image.Msg -> (values -> Image.Model) -> (Image.Model -> values) -> msg
     }
 
 
@@ -464,7 +481,7 @@ renderField :
     -> FieldConfig values msg
     -> Form.FilledField values
     -> element
-renderField customConfig ({ onChange, onBlur, disabled, showError, multiselectMsg } as fieldConfig) field =
+renderField customConfig ({ onChange, onBlur, disabled, showError, multiselectMsg, imageMsg } as fieldConfig) field =
     let
         blur label =
             Maybe.map (\onBlurEvent -> onBlurEvent label) onBlur
@@ -562,6 +579,16 @@ renderField customConfig ({ onChange, onBlur, disabled, showError, multiselectMs
                 , attributes = attributes
                 }
 
+        Form.Image { attributes, value, getValue, update } ->
+            customConfig.imageField
+                { onChange = \msg -> imageMsg msg getValue update
+                , disabled = field.isDisabled || disabled
+                , value = value
+                , error = field.error
+                , showError = showError attributes.label
+                , attributes = attributes
+                }
+
         Form.Group fields ->
             fields
                 |> List.map (maybeIgnoreChildError field.error >> renderField customConfig { fieldConfig | disabled = field.isDisabled || disabled })
@@ -649,6 +676,7 @@ htmlViewConfig =
     , radioField = radioField
     , selectField = selectField
     , multiselectField = multiselectField
+    , imageField = imageField
     , group = group
     , section = section
     , formList = formList
@@ -932,6 +960,14 @@ multiselectField : MultiselectFieldConfig msg -> Html msg
 multiselectField { onChange, value, error, showError, attributes } =
     (Html.map onChange <|
         Multiselect.view value
+    )
+        |> withLabelAndError attributes.label showError error
+
+
+imageField : ImageFieldConfig msg -> Html msg
+imageField { onChange, value, disabled, error, showError, attributes } =
+    (Html.map onChange <|
+        Image.view value
     )
         |> withLabelAndError attributes.label showError error
 

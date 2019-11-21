@@ -5,7 +5,7 @@ module Form exposing
     , succeed, append, optional, disable, group, section, andThen, meta, list
     , map, mapValues
     , Field(..), TextType(..), FilledField, fill
-    , multiselectField
+    , imageField, multiselectField
     )
 
 {-| Build [composable forms](#Form) comprised of [fields](#fields).
@@ -59,6 +59,8 @@ import Form.Base.SelectField as SelectField exposing (SelectField)
 import Form.Base.TextField as TextField exposing (TextField)
 import Form.Error exposing (Error(..))
 import Form.Field as Field
+import Image
+import Maybe.Extra as MaybeExtra
 import Multiselect
 
 
@@ -195,21 +197,25 @@ textareaField =
     TextField.form (Text TextArea)
 
 
-{-| Create a form that contains a single search field.
 
-It has the same configuration options as [`textField`](#textField).
-
--}
-searchField :
-    { parser : String -> Result String output
-    , value : values -> String
-    , update : String -> values -> values
-    , error : values -> Maybe String
-    , attributes : TextField.Attributes
-    }
-    -> Form values output
-searchField =
-    TextField.form (Text TextSearch)
+--{-| Create a form that contains a single search field.
+--
+--It has the same configuration options as [`textField`](#textField).
+--
+---}
+--
+--
+--
+--searchField :
+--    { parser : String -> Result String output
+--    , value : values -> String
+--    , update : String -> values -> values
+--    , error : values -> Maybe String
+--    , attributes : TextField.Attributes
+--    }
+--    -> Form values output
+--searchField =
+--    TextField.form (Text TextSearch)
 
 
 {-| Create a form that contains a single number field.
@@ -321,7 +327,7 @@ multiselectField :
     , attributes : { label : String, placeholder : String }
     }
     -> Form values output
-multiselectField { parser, value, update, error, attributes } =
+multiselectField { parser, value, update, attributes } =
     Base.custom
         (\values ->
             { state =
@@ -338,6 +344,35 @@ multiselectField { parser, value, update, error, attributes } =
                 value values
                     |> Multiselect.getSelectedValues
                     |> List.isEmpty
+            }
+        )
+
+
+imageField :
+    { parser : Image.Model -> Result String output
+    , value : values -> Image.Model
+    , update : Image.Model -> values -> values
+    , error : values -> Maybe String
+    , attributes : { label : String }
+    }
+    -> Form values output
+imageField { parser, value, update, attributes } =
+    Base.custom
+        (\values ->
+            { state =
+                Image
+                    { value = value values
+                    , attributes = attributes
+                    , getValue = value
+                    , update = \value_ -> update value_ values
+                    }
+            , result =
+                parser (value values)
+                    |> Result.mapError (\error_ -> ( ValidationFailed error_, [] ))
+            , isEmpty =
+                value values
+                    |> Image.getImageUrl
+                    |> (\image -> MaybeExtra.isNothing image)
             }
         )
 
@@ -714,9 +749,8 @@ mapValues { value, update } form =
 mapFieldValues : (a -> b -> b) -> b -> Field a -> Field b
 mapFieldValues update values field =
     let
-        mapUpdate fn value =
-            update (fn value) values
-
+        --        mapUpdate fn value =
+        --            update (fn value) values
         newUpdate oldValues =
             update oldValues values
     in
@@ -741,6 +775,9 @@ mapFieldValues update values field =
 
         Multiselect field_ ->
             Multiselect (Field.mapValues newUpdate field_)
+
+        Image field_ ->
+            Image (Field.mapValues newUpdate field_)
 
         Group fields ->
             Group
@@ -814,6 +851,13 @@ type Field values
         , value : Multiselect.Model
         , getValue : values -> Multiselect.Model
         , update : Multiselect.Model -> values
+        }
+    | Image
+        { attributes :
+            { label : String }
+        , value : Image.Model
+        , getValue : values -> Image.Model
+        , update : Image.Model -> values
         }
     | Group (List (FilledField values))
     | Section String (List (FilledField values))
