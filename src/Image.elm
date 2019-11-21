@@ -1,4 +1,4 @@
-module Image exposing (Model, Msg, getImage, getImageUrl, imageRequested, init, removeImage, update, view)
+module Image exposing (Model, Msg, getImage, getImageUrl, imageRequestedMsg, init, removeImageMsg, update, view)
 
 import File exposing (File)
 import File.Select as Select
@@ -33,13 +33,13 @@ getImageUrl (Model model) =
     model.imageUrl
 
 
-imageRequested : Msg
-imageRequested =
+imageRequestedMsg : Msg
+imageRequestedMsg =
     ImageRequested
 
 
-removeImage : Msg
-removeImage =
+removeImageMsg : Msg
+removeImageMsg =
     RemoveImage
 
 
