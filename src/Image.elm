@@ -79,7 +79,7 @@ update msg (Model model) =
 view : Model -> Html Msg
 view (Model model) =
     Html.div []
-        [ Html.button [ onClick ImageRequested ] [ Html.text "add image" ]
-        , Html.button [ onClick RemoveImage ] [ Html.text "delete image" ]
+        [ Html.p [ onClick ImageRequested ] [ Html.text "add image" ]
+        , Html.p [ onClick RemoveImage ] [ Html.text "delete image" ]
         , Html.img [ Attributes.src <| Maybe.withDefault "" model.imageUrl ] []
         ]
