@@ -1,4 +1,4 @@
-module Image exposing (Model, Msg, getImage, getImageUrl, imageRequestedMsg, init, removeImageMsg, update, view)
+module Image exposing (Model, Msg, getImageFile, getImageUrl, imageRequestedMsg, init, removeImageMsg, update, view)
 
 import File exposing (File)
 import File.Select as Select
@@ -23,8 +23,13 @@ init imageUrl =
         }
 
 
-getImage : Model -> Maybe File
+getImage : Model -> Model
 getImage (Model model) =
+    Model model
+
+
+getImageFile : Model -> Maybe File
+getImageFile (Model model) =
     model.image
 
 
