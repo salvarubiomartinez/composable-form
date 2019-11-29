@@ -5,7 +5,7 @@ module Form exposing
     , succeed, append, optional, disable, group, section, andThen, meta, list
     , map, mapValues
     , Field(..), TextType(..), FilledField, fill
-    , imageField, multiselectField
+    , datePickerField, dateRangePickerField, imageField, multiselectField
     )
 
 {-| Build [composable forms](#Form) comprised of [fields](#fields).
@@ -375,6 +375,60 @@ imageField { parser, value, update, attributes } =
                 value values
                     |> Image.getImageUrl
                     |> (\image -> MaybeExtra.isNothing image)
+            }
+        )
+
+
+datePickerField :
+    { parser : DatePicker.DatePicker -> Result String output
+    , value : values -> DatePicker.DatePicker
+    , update : DatePicker.DatePicker -> values -> values
+    , error : values -> Maybe String
+    , attributes : { label : String }
+    }
+    -> Form values output
+datePickerField { parser, value, update, attributes } =
+    Base.custom
+        (\values ->
+            { state =
+                DatePicker
+                    { value = value values
+                    , attributes = attributes
+                    , getValue = value
+                    , update = \value_ -> update value_ values
+                    }
+            , result =
+                parser (value values)
+                    |> Result.mapError (\error_ -> ( ValidationFailed error_, [] ))
+            , isEmpty =
+                False
+            }
+        )
+
+
+dateRangePickerField :
+    { parser : DateRangePicker.DateRangePicker -> Result String output
+    , value : values -> DateRangePicker.DateRangePicker
+    , update : DateRangePicker.DateRangePicker -> values -> values
+    , error : values -> Maybe String
+    , attributes : { label : String }
+    }
+    -> Form values output
+dateRangePickerField { parser, value, update, attributes } =
+    Base.custom
+        (\values ->
+            { state =
+                DateRangePicker
+                    { value = value values
+                    , attributes = attributes
+                    , getValue = value
+                    , update = \value_ -> update value_ values
+                    }
+            , result =
+                parser (value values)
+                    |> Result.mapError (\error_ -> ( ValidationFailed error_, [] ))
+            , isEmpty =
+                False
             }
         )
 
