@@ -7,3 +7,4 @@ yarn.lock
 
 # vim temporal files
 *.swp
+tags

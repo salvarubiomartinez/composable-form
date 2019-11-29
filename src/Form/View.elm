@@ -43,6 +43,8 @@ custom view code. Take a look at [the source code of this module][source] for in
 
 -}
 
+import DatePicker
+import DateRangePicker
 import Form as Form exposing (Form)
 import Form.Base.CheckboxField as CheckboxField
 import Form.Base.NumberField as NumberField
@@ -142,6 +144,8 @@ type alias ViewConfig values msg =
     , validation : Validation
     , multiselectMsg : Multiselect.Msg -> (values -> Multiselect.Model) -> (Multiselect.Model -> values) -> msg
     , imageMsg : Image.Msg -> (values -> Image.Model) -> (Image.Model -> values) -> msg
+    , datePickerMsg : DatePicker.Msg -> (values -> DatePicker.DatePicker) -> (DatePicker.DatePicker -> values) -> msg
+    , dateRangePickerMsg : DateRangePicker.Msg -> (values -> DateRangePicker.DateRangePicker) -> (DateRangePicker.DateRangePicker -> values) -> msg
     }
 
 
@@ -180,6 +184,8 @@ type alias CustomConfig msg element =
     , selectField : SelectFieldConfig msg -> element
     , multiselectField : MultiselectFieldConfig msg -> element
     , imageField : ImageFieldConfig msg -> element
+    , datePickerField : DatePickerFieldConfig msg -> element
+    , dateRangePickerField : DateRangePickerFieldConfig msg -> element
     , group : List element -> element
     , section : String -> List element -> element
     , formList : FormListConfig msg element -> element
@@ -344,6 +350,30 @@ type alias ImageFieldConfig msg =
     }
 
 
+type alias DatePickerFieldConfig msg =
+    { onChange : DatePicker.Msg -> msg
+    , value : DatePicker.DatePicker
+    , disabled : Bool
+    , error : Maybe Error
+    , showError : Bool
+    , attributes :
+        { label : String
+        }
+    }
+
+
+type alias DateRangePickerFieldConfig msg =
+    { onChange : DateRangePicker.Msg -> msg
+    , value : DateRangePicker.DateRangePicker
+    , disabled : Bool
+    , error : Maybe Error
+    , showError : Bool
+    , attributes :
+        { label : String
+        }
+    }
+
+
 {-| Describes how a form list should be rendered.
 
   - `forms` is a list containing the elements of the form list.
@@ -393,7 +423,7 @@ custom :
     -> Form values msg
     -> Model values
     -> element
-custom config { onChange, action, loading, validation, multiselectMsg, imageMsg } form_ model =
+custom config { onChange, action, loading, validation, multiselectMsg, imageMsg, datePickerMsg, dateRangePickerMsg } form_ model =
     let
         { fields, result } =
             Form.fill form_ model.values
@@ -430,6 +460,8 @@ custom config { onChange, action, loading, validation, multiselectMsg, imageMsg 
                 { onChange = \values -> onChange { model | values = values }
                 , multiselectMsg = multiselectMsg
                 , imageMsg = imageMsg
+                , datePickerMsg = datePickerMsg
+                , dateRangePickerMsg = dateRangePickerMsg
                 , onBlur = onBlur
                 , disabled = model.state == Loading
                 , showError = showError
@@ -473,6 +505,8 @@ type alias FieldConfig values msg =
     , showError : String -> Bool
     , multiselectMsg : Multiselect.Msg -> (values -> Multiselect.Model) -> (Multiselect.Model -> values) -> msg
     , imageMsg : Image.Msg -> (values -> Image.Model) -> (Image.Model -> values) -> msg
+    , datePickerMsg : DatePicker.Msg -> (values -> DatePicker.DatePicker) -> (DatePicker.DatePicker -> values) -> msg
+    , dateRangePickerMsg : DateRangePicker.Msg -> (values -> DateRangePicker.DateRangePicker) -> (DateRangePicker.DateRangePicker -> values) -> msg
     }
 
 
@@ -481,7 +515,7 @@ renderField :
     -> FieldConfig values msg
     -> Form.FilledField values
     -> element
-renderField customConfig ({ onChange, onBlur, disabled, showError, multiselectMsg, imageMsg } as fieldConfig) field =
+renderField customConfig ({ onChange, onBlur, disabled, showError, multiselectMsg, imageMsg, datePickerMsg, dateRangePickerMsg } as fieldConfig) field =
     let
         blur label =
             Maybe.map (\onBlurEvent -> onBlurEvent label) onBlur
@@ -589,6 +623,26 @@ renderField customConfig ({ onChange, onBlur, disabled, showError, multiselectMs
                 , attributes = attributes
                 }
 
+        Form.DatePicker { attributes, value, getValue, update } ->
+            customConfig.datePickerField
+                { onChange = \msg -> datePickerMsg msg getValue update
+                , disabled = field.isDisabled || disabled
+                , value = value
+                , error = field.error
+                , showError = showError attributes.label
+                , attributes = attributes
+                }
+
+        Form.DateRangePicker { attributes, value, getValue, update } ->
+            customConfig.dateRangePickerField
+                { onChange = \msg -> dateRangePickerMsg msg getValue update
+                , disabled = field.isDisabled || disabled
+                , value = value
+                , error = field.error
+                , showError = showError attributes.label
+                , attributes = attributes
+                }
+
         Form.Group fields ->
             fields
                 |> List.map (maybeIgnoreChildError field.error >> renderField customConfig { fieldConfig | disabled = field.isDisabled || disabled })
@@ -677,6 +731,8 @@ htmlViewConfig =
     , selectField = selectField
     , multiselectField = multiselectField
     , imageField = imageField
+    , datePickerField = datePickerField
+    , dateRangePickerField = dateRangePickerField
     , group = group
     , section = section
     , formList = formList
@@ -968,6 +1024,22 @@ imageField : ImageFieldConfig msg -> Html msg
 imageField { onChange, value, disabled, error, showError, attributes } =
     (Html.map onChange <|
         Image.view value
+    )
+        |> withLabelAndError attributes.label showError error
+
+
+datePickerField : DatePickerFieldConfig msg -> Html msg
+datePickerField { onChange, value, disabled, error, showError, attributes } =
+    (Html.map onChange <|
+        DatePicker.view value
+    )
+        |> withLabelAndError attributes.label showError error
+
+
+dateRangePickerField : DateRangePickerFieldConfig msg -> Html msg
+dateRangePickerField { onChange, value, disabled, error, showError, attributes } =
+    (Html.map onChange <|
+        DateRangePicker.view value
     )
         |> withLabelAndError attributes.label showError error
 

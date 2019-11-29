@@ -49,6 +49,8 @@ might suit your needs.
 
 -}
 
+import DatePicker
+import DateRangePicker
 import Form.Base as Base
 import Form.Base.CheckboxField as CheckboxField exposing (CheckboxField)
 import Form.Base.FormList as FormList exposing (FormList)
@@ -779,6 +781,12 @@ mapFieldValues update values field =
         Image field_ ->
             Image (Field.mapValues newUpdate field_)
 
+        DatePicker field_ ->
+            DatePicker (Field.mapValues newUpdate field_)
+
+        DateRangePicker field_ ->
+            DateRangePicker (Field.mapValues newUpdate field_)
+
         Group fields ->
             Group
                 (List.map
@@ -858,6 +866,20 @@ type Field values
         , value : Image.Model
         , getValue : values -> Image.Model
         , update : Image.Model -> values
+        }
+    | DatePicker
+        { attributes :
+            { label : String }
+        , value : DatePicker.DatePicker
+        , getValue : values -> DatePicker.DatePicker
+        , update : DatePicker.DatePicker -> values
+        }
+    | DateRangePicker
+        { attributes :
+            { label : String }
+        , value : DateRangePicker.DateRangePicker
+        , getValue : values -> DateRangePicker.DateRangePicker
+        , update : DateRangePicker.DateRangePicker -> values
         }
     | Group (List (FilledField values))
     | Section String (List (FilledField values))
