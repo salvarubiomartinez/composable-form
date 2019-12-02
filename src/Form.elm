@@ -49,8 +49,6 @@ might suit your needs.
 
 -}
 
-import DatePicker
-import DateRangePicker
 import Form.Base as Base
 import Form.Base.CheckboxField as CheckboxField exposing (CheckboxField)
 import Form.Base.FormList as FormList exposing (FormList)
@@ -61,9 +59,11 @@ import Form.Base.SelectField as SelectField exposing (SelectField)
 import Form.Base.TextField as TextField exposing (TextField)
 import Form.Error exposing (Error(..))
 import Form.Field as Field
-import Image
 import Maybe.Extra as MaybeExtra
 import Multiselect
+import SpringDesign.Organism.DatePickerApi as DatePickerApi
+import SpringDesign.Organism.DateRangePickerApi as DateRangePickerApi
+import SpringDesign.Organism.Image as Image
 
 
 
@@ -380,11 +380,11 @@ imageField { parser, value, update, attributes } =
 
 
 datePickerField :
-    { parser : DatePicker.DatePicker -> Result String output
-    , value : values -> DatePicker.DatePicker
-    , update : DatePicker.DatePicker -> values -> values
+    { parser : DatePickerApi.Model -> Result String output
+    , value : values -> DatePickerApi.Model
+    , update : DatePickerApi.Model -> values -> values
     , error : values -> Maybe String
-    , attributes : { label : String }
+    , attributes : { label : String, l10n : DatePickerApi.L10n }
     }
     -> Form values output
 datePickerField { parser, value, update, attributes } =
@@ -407,11 +407,11 @@ datePickerField { parser, value, update, attributes } =
 
 
 dateRangePickerField :
-    { parser : DateRangePicker.DateRangePicker -> Result String output
-    , value : values -> DateRangePicker.DateRangePicker
-    , update : DateRangePicker.DateRangePicker -> values -> values
+    { parser : DateRangePickerApi.Model -> Result String output
+    , value : values -> DateRangePickerApi.Model
+    , update : DateRangePickerApi.Model -> values -> values
     , error : values -> Maybe String
-    , attributes : { label : String }
+    , attributes : { label : String, l10n : DateRangePickerApi.L10n }
     }
     -> Form values output
 dateRangePickerField { parser, value, update, attributes } =
@@ -922,18 +922,17 @@ type Field values
         , update : Image.Model -> values
         }
     | DatePicker
-        { attributes :
-            { label : String }
-        , value : DatePicker.DatePicker
-        , getValue : values -> DatePicker.DatePicker
-        , update : DatePicker.DatePicker -> values
+        { attributes : { label : String, l10n : DatePickerApi.L10n }
+        , value : DatePickerApi.Model
+        , getValue : values -> DatePickerApi.Model
+        , update : DatePickerApi.Model -> values
         }
     | DateRangePicker
         { attributes :
-            { label : String }
-        , value : DateRangePicker.DateRangePicker
-        , getValue : values -> DateRangePicker.DateRangePicker
-        , update : DateRangePicker.DateRangePicker -> values
+            { label : String, l10n : DateRangePickerApi.L10n }
+        , value : DateRangePickerApi.Model
+        , getValue : values -> DateRangePickerApi.Model
+        , update : DateRangePickerApi.Model -> values
         }
     | Group (List (FilledField values))
     | Section String (List (FilledField values))

@@ -5,7 +5,7 @@ module Form.View exposing
     , custom, CustomConfig, FormConfig, TextFieldConfig, NumberFieldConfig, RangeFieldConfig
     , CheckboxFieldConfig, RadioFieldConfig, SelectFieldConfig
     , FormListConfig, FormListItemConfig
-    , ImageFieldConfig, MultiselectFieldConfig
+    , DatePickerFieldConfig, DateRangePickerFieldConfig, ImageFieldConfig, MultiselectFieldConfig, inputBuilder, maybeErrorMessage, withMaybeAttribute
     )
 
 {-| This module provides helpers to render a [`Form`](Form#Form).
@@ -43,8 +43,6 @@ custom view code. Take a look at [the source code of this module][source] for in
 
 -}
 
-import DatePicker
-import DateRangePicker
 import Form as Form exposing (Form)
 import Form.Base.CheckboxField as CheckboxField
 import Form.Base.NumberField as NumberField
@@ -55,11 +53,14 @@ import Form.Base.TextField as TextField
 import Form.Error as Error exposing (Error)
 import Html exposing (Html)
 import Html.Attributes as Attributes
-import Html.Events as Events exposing (onClick)
-import Image
+import Html.Events as Events exposing (onClick, onInput)
 import Json.Decode
+import Maybe.Extra exposing (isJust)
 import Multiselect
 import Set exposing (Set)
+import SpringDesign.Organism.DatePickerApi as DatePickerApi
+import SpringDesign.Organism.DateRangePickerApi as DateRangePickerApi
+import SpringDesign.Organism.Image as Image
 
 
 {-| This type gathers the values of the form, with some exposed state and internal view state that
@@ -144,8 +145,8 @@ type alias ViewConfig values msg =
     , validation : Validation
     , multiselectMsg : Multiselect.Msg -> (values -> Multiselect.Model) -> (Multiselect.Model -> values) -> msg
     , imageMsg : Image.Msg -> (values -> Image.Model) -> (Image.Model -> values) -> msg
-    , datePickerMsg : DatePicker.Msg -> (values -> DatePicker.DatePicker) -> (DatePicker.DatePicker -> values) -> msg
-    , dateRangePickerMsg : DateRangePicker.Msg -> (values -> DateRangePicker.DateRangePicker) -> (DateRangePicker.DateRangePicker -> values) -> msg
+    , datePickerMsg : DatePickerApi.Msg -> (values -> DatePickerApi.Model) -> (DatePickerApi.Model -> values) -> msg
+    , dateRangePickerMsg : DateRangePickerApi.Msg -> (values -> DateRangePickerApi.Model) -> (DateRangePickerApi.Model -> values) -> msg
     }
 
 
@@ -351,26 +352,22 @@ type alias ImageFieldConfig msg =
 
 
 type alias DatePickerFieldConfig msg =
-    { onChange : DatePicker.Msg -> msg
-    , value : DatePicker.DatePicker
+    { onChange : DatePickerApi.Msg -> msg
+    , value : DatePickerApi.Model
     , disabled : Bool
     , error : Maybe Error
     , showError : Bool
-    , attributes :
-        { label : String
-        }
+    , attributes : { label : String, l10n : DatePickerApi.L10n }
     }
 
 
 type alias DateRangePickerFieldConfig msg =
-    { onChange : DateRangePicker.Msg -> msg
-    , value : DateRangePicker.DateRangePicker
+    { onChange : DateRangePickerApi.Msg -> msg
+    , value : DateRangePickerApi.Model
     , disabled : Bool
     , error : Maybe Error
     , showError : Bool
-    , attributes :
-        { label : String
-        }
+    , attributes : { label : String, l10n : DateRangePickerApi.L10n }
     }
 
 
@@ -505,8 +502,8 @@ type alias FieldConfig values msg =
     , showError : String -> Bool
     , multiselectMsg : Multiselect.Msg -> (values -> Multiselect.Model) -> (Multiselect.Model -> values) -> msg
     , imageMsg : Image.Msg -> (values -> Image.Model) -> (Image.Model -> values) -> msg
-    , datePickerMsg : DatePicker.Msg -> (values -> DatePicker.DatePicker) -> (DatePicker.DatePicker -> values) -> msg
-    , dateRangePickerMsg : DateRangePicker.Msg -> (values -> DateRangePicker.DateRangePicker) -> (DateRangePicker.DateRangePicker -> values) -> msg
+    , datePickerMsg : DatePickerApi.Msg -> (values -> DatePickerApi.Model) -> (DatePickerApi.Model -> values) -> msg
+    , dateRangePickerMsg : DateRangePickerApi.Msg -> (values -> DateRangePickerApi.Model) -> (DateRangePickerApi.Model -> values) -> msg
     }
 
 
@@ -1031,7 +1028,8 @@ imageField { onChange, value, disabled, error, showError, attributes } =
 datePickerField : DatePickerFieldConfig msg -> Html msg
 datePickerField { onChange, value, disabled, error, showError, attributes } =
     (Html.map onChange <|
-        DatePicker.view value
+        Html.div [ Attributes.class "theme--wrapper theme-light" ]
+            [ DatePickerApi.view attributes.l10n value ]
     )
         |> withLabelAndError attributes.label showError error
 
@@ -1039,7 +1037,9 @@ datePickerField { onChange, value, disabled, error, showError, attributes } =
 dateRangePickerField : DateRangePickerFieldConfig msg -> Html msg
 dateRangePickerField { onChange, value, disabled, error, showError, attributes } =
     (Html.map onChange <|
-        DateRangePicker.view value
+        Html.div [ Attributes.class "theme--wrapper theme-light" ]
+            [ DateRangePickerApi.view attributes.l10n value
+            ]
     )
         |> withLabelAndError attributes.label showError error
 
@@ -1140,3 +1140,28 @@ fromString parse currentValue input =
         parse input
             |> Maybe.map Just
             |> Maybe.withDefault currentValue
+
+
+inputBuilder :
+    String
+    -> TextFieldConfig msg
+    -> Html msg
+inputBuilder type__ { onChange, onBlur, disabled, value, error, showError, attributes } =
+    Html.div [ Attributes.class "form-group row" ]
+        [ Html.label [ Attributes.class "col-md-2 col-form-label" ] [ Html.text attributes.label ]
+        , Html.div [ Attributes.class "col-md-10" ]
+            [ Html.input
+                [ Attributes.class "form-control"
+                , Attributes.classList
+                    [ ( "is-invalid", showError && isJust error )
+                    ]
+                , Attributes.value value
+                , Attributes.type_ type__
+                , Attributes.placeholder attributes.placeholder
+                , Attributes.disabled disabled
+                , onInput onChange
+                ]
+                []
+            , Html.div [ Attributes.class "invalid-feedback" ] [ maybeErrorMessage showError error ]
+            ]
+        ]
