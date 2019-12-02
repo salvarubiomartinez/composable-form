@@ -61,9 +61,9 @@ import Form.Error exposing (Error(..))
 import Form.Field as Field
 import Maybe.Extra as MaybeExtra
 import Multiselect
-import SpringDesign.Organism.DatePickerApi as DatePickerApi
-import SpringDesign.Organism.DateRangePickerApi as DateRangePickerApi
-import SpringDesign.Organism.Image as Image
+import SpringDesign.Organism.DatePickerInput as DatePickerApi
+import SpringDesign.Organism.DateRangePickerInput as DateRangePickerApi
+import SpringDesign.Organism.ImageInput as Image
 
 
 

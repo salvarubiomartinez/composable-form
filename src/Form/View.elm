@@ -58,9 +58,9 @@ import Json.Decode
 import Maybe.Extra exposing (isJust)
 import Multiselect
 import Set exposing (Set)
-import SpringDesign.Organism.DatePickerApi as DatePickerApi
-import SpringDesign.Organism.DateRangePickerApi as DateRangePickerApi
-import SpringDesign.Organism.Image as Image
+import SpringDesign.Organism.DatePickerInput as DatePickerApi
+import SpringDesign.Organism.DateRangePickerInput as DateRangePickerApi
+import SpringDesign.Organism.ImageInput as Image
 
 
 {-| This type gathers the values of the form, with some exposed state and internal view state that
@@ -1020,7 +1020,7 @@ multiselectField { onChange, value, error, showError, attributes } =
 imageField : ImageFieldConfig msg -> Html msg
 imageField { onChange, value, disabled, error, showError, attributes } =
     (Html.map onChange <|
-        Image.view value
+        Image.imageInput value
     )
         |> withLabelAndError attributes.label showError error
 
@@ -1029,7 +1029,7 @@ datePickerField : DatePickerFieldConfig msg -> Html msg
 datePickerField { onChange, value, disabled, error, showError, attributes } =
     (Html.map onChange <|
         Html.div [ Attributes.class "theme--wrapper theme-light" ]
-            [ DatePickerApi.view attributes.l10n value ]
+            [ DatePickerApi.datePickerInput attributes.l10n value ]
     )
         |> withLabelAndError attributes.label showError error
 
@@ -1038,7 +1038,7 @@ dateRangePickerField : DateRangePickerFieldConfig msg -> Html msg
 dateRangePickerField { onChange, value, disabled, error, showError, attributes } =
     (Html.map onChange <|
         Html.div [ Attributes.class "theme--wrapper theme-light" ]
-            [ DateRangePickerApi.view attributes.l10n value
+            [ DateRangePickerApi.dateRangePickerInput attributes.l10n value
             ]
     )
         |> withLabelAndError attributes.label showError error
