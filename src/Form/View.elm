@@ -1147,11 +1147,11 @@ inputBuilder :
     -> TextFieldConfig msg
     -> Html msg
 inputBuilder type__ { onChange, onBlur, disabled, value, error, showError, attributes } =
-    Html.div [ Attributes.class "form-group row" ]
-        [ Html.label [ Attributes.class "col-md-2 col-form-label" ] [ Html.text attributes.label ]
-        , Html.div [ Attributes.class "col-md-10" ]
+    Html.div [ Attributes.class "atom--form-field" ]
+        [ Html.label [ Attributes.class "atom--form-field--label" ] [ Html.text attributes.label ]
+        , Html.div [ Attributes.class "atom--form-field--content" ]
             [ Html.input
-                [ Attributes.class "form-control"
+                [ Attributes.class "atom--form-field--content--input"
                 , Attributes.classList
                     [ ( "is-invalid", showError && isJust error )
                     ]
