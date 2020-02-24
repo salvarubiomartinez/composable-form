@@ -70,7 +70,7 @@ It can be useful to build your own [`Form.mapValues`](Form#mapValues) function.
 
 -}
 mapValues : (a -> b) -> Field attributes value a -> Field attributes value b
-mapValues fn { value, update, attributes } =
+mapValues fn { value, getValue, update, attributes } =
     { value = value
     , getValue = \_ -> value
     , update = update >> fn

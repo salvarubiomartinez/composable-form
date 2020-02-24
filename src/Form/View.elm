@@ -143,7 +143,7 @@ type alias ViewConfig values msg =
     , action : String
     , loading : String
     , validation : Validation
-    , multiselectMsg : Multiselect.Msg -> (values -> Multiselect.Model) -> (Multiselect.Model -> values) -> msg
+    , multiselectMsg : Multiselect.Msg -> (values -> Multiselect.Model) -> (Multiselect.Model -> values -> values) -> msg
     , imageMsg : Image.Msg -> (values -> Image.Model) -> (Image.Model -> values) -> msg
     , datePickerMsg : DatePickerApi.Msg -> (values -> DatePickerApi.Model) -> (DatePickerApi.Model -> values) -> msg
     , dateRangePickerMsg : DateRangePickerApi.Msg -> (values -> DateRangePickerApi.Model) -> (DateRangePickerApi.Model -> values) -> msg
@@ -500,7 +500,7 @@ type alias FieldConfig values msg =
     , onBlur : Maybe (String -> msg)
     , disabled : Bool
     , showError : String -> Bool
-    , multiselectMsg : Multiselect.Msg -> (values -> Multiselect.Model) -> (Multiselect.Model -> values) -> msg
+    , multiselectMsg : Multiselect.Msg -> (values -> Multiselect.Model) -> (Multiselect.Model -> values -> values) -> msg
     , imageMsg : Image.Msg -> (values -> Image.Model) -> (Image.Model -> values) -> msg
     , datePickerMsg : DatePickerApi.Msg -> (values -> DatePickerApi.Model) -> (DatePickerApi.Model -> values) -> msg
     , dateRangePickerMsg : DateRangePickerApi.Msg -> (values -> DateRangePickerApi.Model) -> (DateRangePickerApi.Model -> values) -> msg
@@ -601,9 +601,9 @@ renderField customConfig ({ onChange, onBlur, disabled, showError, multiselectMs
                 , attributes = attributes
                 }
 
-        Form.Multiselect { attributes, value, getValue, update } ->
+        Form.Multiselect { attributes, value, getValue, update, update_ } ->
             customConfig.multiselectField
-                { onChange = \msg -> multiselectMsg msg getValue update
+                { onChange = \msg -> multiselectMsg msg getValue update_
                 , value = value
                 , error = field.error
                 , showError = showError attributes.label

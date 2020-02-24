@@ -94,6 +94,7 @@ type alias Config values elementValues =
 type alias ElementState values elementValues =
     { index : Int
     , update : elementValues -> values -> values
+    , downdate : values -> elementValues
     , values : values
     , elementValues : elementValues
     }
@@ -126,6 +127,7 @@ form tagger { value, update, default, attributes } buildElement =
                                         List.Extra.setAt index newElementValues listOfElementValues
                                 in
                                 update newList values_
+                        , downdate = \values_ -> List.Extra.getAt index (value values_) |> Maybe.withDefault elementValues
                         , index = index
                         , values = values
                         , elementValues = elementValues

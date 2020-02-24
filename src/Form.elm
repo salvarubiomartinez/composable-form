@@ -3,9 +3,14 @@ module Form exposing
     , textField, emailField, passwordField, textareaField, numberField, rangeField, checkboxField
     , radioField, selectField
     , succeed, append, optional, disable, group, section, andThen, meta, list
-    , map, mapValues
+    , map
     , Field(..), TextType(..), FilledField, fill
-    , datePickerField, dateRangePickerField, imageField, multiselectField
+    ,  datePickerField
+      , dateRangePickerField
+      , imageField
+      , multiselectField
+        --,  mapValues
+
     )
 
 {-| Build [composable forms](#Form) comprised of [fields](#fields).
@@ -337,6 +342,7 @@ multiselectField { parser, value, update, attributes } =
                     { value = value values
                     , attributes = attributes
                     , getValue = value
+                    , update_ = update
                     , update = \value_ -> update value_ values
                     }
             , result =
@@ -729,7 +735,7 @@ list :
     -> Form values (List output)
 list config elementForIndex =
     let
-        fillElement { index, update, values, elementValues } =
+        fillElement { index, downdate, update, values, elementValues } =
             let
                 filledElement =
                     fill (elementForIndex index) elementValues
@@ -737,7 +743,7 @@ list config elementForIndex =
             { fields =
                 List.map
                     (\filledField ->
-                        { state = mapFieldValues update values filledField.state
+                        { state = mapFieldValues downdate update values filledField.state
                         , error = filledField.error
                         , isDisabled = filledField.isDisabled
                         }
@@ -792,18 +798,22 @@ This can be useful when you need to nest forms:
                 )
 
 -}
-mapValues : { value : a -> b, update : b -> a -> a } -> Form b output -> Form a output
-mapValues { value, update } form =
-    Base.meta
-        (\values ->
-            form
-                |> Base.mapValues value
-                |> Base.mapField (mapFieldValues update values)
-        )
 
 
-mapFieldValues : (a -> b -> b) -> b -> Field a -> Field b
-mapFieldValues update values field =
+
+--mapValues : { value : a -> b, update : b -> a -> a } -> Form b output -> Form a output
+--mapValues { value, update } form =
+--    Base.meta
+--        (\values ->
+--            form
+--                |> Base.mapValues value
+--                |> Base.mapField (mapFieldValues update values)
+--        )
+--
+
+
+mapFieldValues : (b -> a) -> (a -> b -> b) -> b -> Field a -> Field b
+mapFieldValues downdate update values field =
     let
         --        mapUpdate fn value =
         --            update (fn value) values
@@ -830,8 +840,15 @@ mapFieldValues update values field =
             Select (Field.mapValues newUpdate field_)
 
         Multiselect field_ ->
-            Multiselect (Field.mapValues newUpdate field_)
+            Multiselect
+                { value = field_.value
+                , getValue = downdate >> field_.getValue
+                , update = field_.update >> newUpdate
+                , update_ = \value values_ -> field_.update_ value (downdate values_) |> newUpdate
+                , attributes = field_.attributes
+                }
 
+        -- Multiselect (Field.mapValues newUpdate field_)
         Image field_ ->
             Image (Field.mapValues newUpdate field_)
 
@@ -845,7 +862,7 @@ mapFieldValues update values field =
             Group
                 (List.map
                     (\filledField ->
-                        { state = mapFieldValues update values filledField.state
+                        { state = mapFieldValues downdate update values filledField.state
                         , error = filledField.error
                         , isDisabled = filledField.isDisabled
                         }
@@ -857,7 +874,7 @@ mapFieldValues update values field =
             Section title
                 (List.map
                     (\filledField ->
-                        { state = mapFieldValues update values filledField.state
+                        { state = mapFieldValues downdate update values filledField.state
                         , error = filledField.error
                         , isDisabled = filledField.isDisabled
                         }
@@ -873,7 +890,7 @@ mapFieldValues update values field =
                             { fields =
                                 List.map
                                     (\filledField ->
-                                        { state = mapFieldValues update values filledField.state
+                                        { state = mapFieldValues downdate update values filledField.state
                                         , error = filledField.error
                                         , isDisabled = filledField.isDisabled
                                         }
@@ -913,6 +930,7 @@ type Field values
         , value : Multiselect.Model
         , getValue : values -> Multiselect.Model
         , update : Multiselect.Model -> values
+        , update_ : Multiselect.Model -> values -> values
         }
     | Image
         { attributes :
