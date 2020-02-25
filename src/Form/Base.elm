@@ -229,16 +229,15 @@ custom fillField =
             { fields =
                 [ { state = filled.state
                   , error =
-                        if filled.isEmpty then
-                            Just Error.RequiredFieldIsEmpty
+                        --            if filled.isEmpty then
+                        --                Just Error.RequiredFieldIsEmpty
+                        --            else
+                        case filled.result of
+                            Ok _ ->
+                                Nothing
 
-                        else
-                            case filled.result of
-                                Ok _ ->
-                                    Nothing
-
-                                Err ( firstError, _ ) ->
-                                    Just firstError
+                            Err ( firstError, _ ) ->
+                                Just firstError
                   , isDisabled = False
                   }
                 ]
