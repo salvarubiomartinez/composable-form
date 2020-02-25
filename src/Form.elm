@@ -373,6 +373,7 @@ imageField { parser, value, update, attributes } =
                     , attributes = attributes
                     , getValue = value
                     , update = \value_ -> update value_ values
+                    , update_ = update
                     }
             , result =
                 parser (value values)
@@ -402,6 +403,7 @@ datePickerField { parser, value, update, attributes } =
                     , attributes = attributes
                     , getValue = value
                     , update = \value_ -> update value_ values
+                    , update_ = update
                     }
             , result =
                 parser (value values)
@@ -429,6 +431,7 @@ dateRangePickerField { parser, value, update, attributes } =
                     , attributes = attributes
                     , getValue = value
                     , update = \value_ -> update value_ values
+                    , update_ = update
                     }
             , result =
                 parser (value values)
@@ -850,13 +853,31 @@ mapFieldValues downdate update values field =
 
         -- Multiselect (Field.mapValues newUpdate field_)
         Image field_ ->
-            Image (Field.mapValues newUpdate field_)
+            Image
+                { value = field_.value
+                , getValue = downdate >> field_.getValue
+                , update = field_.update >> newUpdate
+                , update_ = \value values_ -> field_.update_ value (downdate values_) |> newUpdate
+                , attributes = field_.attributes
+                }
 
         DatePicker field_ ->
-            DatePicker (Field.mapValues newUpdate field_)
+            DatePicker
+                { value = field_.value
+                , getValue = downdate >> field_.getValue
+                , update = field_.update >> newUpdate
+                , update_ = \value values_ -> field_.update_ value (downdate values_) |> newUpdate
+                , attributes = field_.attributes
+                }
 
         DateRangePicker field_ ->
-            DateRangePicker (Field.mapValues newUpdate field_)
+            DateRangePicker
+                { value = field_.value
+                , getValue = downdate >> field_.getValue
+                , update = field_.update >> newUpdate
+                , update_ = \value values_ -> field_.update_ value (downdate values_) |> newUpdate
+                , attributes = field_.attributes
+                }
 
         Group fields ->
             Group
@@ -938,12 +959,14 @@ type Field values
         , value : Image.Model
         , getValue : values -> Image.Model
         , update : Image.Model -> values
+        , update_ : Image.Model -> values -> values
         }
     | DatePicker
         { attributes : { label : String, l10n : DatePickerApi.L10n }
         , value : DatePickerApi.Model
         , getValue : values -> DatePickerApi.Model
         , update : DatePickerApi.Model -> values
+        , update_ : DatePickerApi.Model -> values -> values
         }
     | DateRangePicker
         { attributes :
@@ -951,6 +974,7 @@ type Field values
         , value : DateRangePickerApi.Model
         , getValue : values -> DateRangePickerApi.Model
         , update : DateRangePickerApi.Model -> values
+        , update_ : DateRangePickerApi.Model -> values -> values
         }
     | Group (List (FilledField values))
     | Section String (List (FilledField values))

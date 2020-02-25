@@ -144,9 +144,9 @@ type alias ViewConfig values msg =
     , loading : String
     , validation : Validation
     , multiselectMsg : Multiselect.Msg -> (values -> Multiselect.Model) -> (Multiselect.Model -> values -> values) -> msg
-    , imageMsg : Image.Msg -> (values -> Image.Model) -> (Image.Model -> values) -> msg
-    , datePickerMsg : DatePickerApi.Msg -> (values -> DatePickerApi.Model) -> (DatePickerApi.Model -> values) -> msg
-    , dateRangePickerMsg : DateRangePickerApi.Msg -> (values -> DateRangePickerApi.Model) -> (DateRangePickerApi.Model -> values) -> msg
+    , imageMsg : Image.Msg -> (values -> Image.Model) -> (Image.Model -> values -> values) -> msg
+    , datePickerMsg : DatePickerApi.Msg -> (values -> DatePickerApi.Model) -> (DatePickerApi.Model -> values -> values) -> msg
+    , dateRangePickerMsg : DateRangePickerApi.Msg -> (values -> DateRangePickerApi.Model) -> (DateRangePickerApi.Model -> values -> values) -> msg
     }
 
 
@@ -501,9 +501,9 @@ type alias FieldConfig values msg =
     , disabled : Bool
     , showError : String -> Bool
     , multiselectMsg : Multiselect.Msg -> (values -> Multiselect.Model) -> (Multiselect.Model -> values -> values) -> msg
-    , imageMsg : Image.Msg -> (values -> Image.Model) -> (Image.Model -> values) -> msg
-    , datePickerMsg : DatePickerApi.Msg -> (values -> DatePickerApi.Model) -> (DatePickerApi.Model -> values) -> msg
-    , dateRangePickerMsg : DateRangePickerApi.Msg -> (values -> DateRangePickerApi.Model) -> (DateRangePickerApi.Model -> values) -> msg
+    , imageMsg : Image.Msg -> (values -> Image.Model) -> (Image.Model -> values -> values) -> msg
+    , datePickerMsg : DatePickerApi.Msg -> (values -> DatePickerApi.Model) -> (DatePickerApi.Model -> values -> values) -> msg
+    , dateRangePickerMsg : DateRangePickerApi.Msg -> (values -> DateRangePickerApi.Model) -> (DateRangePickerApi.Model -> values -> values) -> msg
     }
 
 
@@ -610,9 +610,9 @@ renderField customConfig ({ onChange, onBlur, disabled, showError, multiselectMs
                 , attributes = attributes
                 }
 
-        Form.Image { attributes, value, getValue, update } ->
+        Form.Image { attributes, value, getValue, update, update_ } ->
             customConfig.imageField
-                { onChange = \msg -> imageMsg msg getValue update
+                { onChange = \msg -> imageMsg msg getValue update_
                 , disabled = field.isDisabled || disabled
                 , value = value
                 , error = field.error
@@ -620,9 +620,9 @@ renderField customConfig ({ onChange, onBlur, disabled, showError, multiselectMs
                 , attributes = attributes
                 }
 
-        Form.DatePicker { attributes, value, getValue, update } ->
+        Form.DatePicker { attributes, value, getValue, update, update_ } ->
             customConfig.datePickerField
-                { onChange = \msg -> datePickerMsg msg getValue update
+                { onChange = \msg -> datePickerMsg msg getValue update_
                 , disabled = field.isDisabled || disabled
                 , value = value
                 , error = field.error
@@ -630,9 +630,9 @@ renderField customConfig ({ onChange, onBlur, disabled, showError, multiselectMs
                 , attributes = attributes
                 }
 
-        Form.DateRangePicker { attributes, value, getValue, update } ->
+        Form.DateRangePicker { attributes, value, getValue, update, update_ } ->
             customConfig.dateRangePickerField
-                { onChange = \msg -> dateRangePickerMsg msg getValue update
+                { onChange = \msg -> dateRangePickerMsg msg getValue update_
                 , disabled = field.isDisabled || disabled
                 , value = value
                 , error = field.error
