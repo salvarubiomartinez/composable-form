@@ -357,7 +357,10 @@ type alias DatePickerFieldConfig msg =
     , disabled : Bool
     , error : Maybe Error
     , showError : Bool
-    , attributes : { label : String, l10n : DatePickerApi.L10n }
+    , attributes :
+        { label : String
+        , l10n : DatePickerApi.L10n
+        }
     }
 
 
@@ -367,7 +370,10 @@ type alias DateRangePickerFieldConfig msg =
     , disabled : Bool
     , error : Maybe Error
     , showError : Bool
-    , attributes : { label : String, l10n : DateRangePickerApi.L10n }
+    , attributes :
+        { label : String
+        , l10n : DateRangePickerApi.L10n
+        }
     }
 
 
@@ -1155,6 +1161,7 @@ inputBuilder type__ { onChange, onBlur, disabled, value, error, showError, attri
                 , Attributes.classList
                     [ ( "is-invalid", showError && isJust error )
                     ]
+                , Attributes.name attributes.identifier
                 , Attributes.value value
                 , Attributes.type_ type__
                 , Attributes.placeholder attributes.placeholder

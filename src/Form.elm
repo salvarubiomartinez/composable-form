@@ -331,7 +331,10 @@ multiselectField :
     , value : values -> Multiselect.Model
     , update : Multiselect.Model -> values -> values
     , error : values -> Maybe String
-    , attributes : { label : String, placeholder : String }
+    , attributes :
+        { label : String
+        , placeholder : String
+        }
     }
     -> Form values output
 multiselectField { parser, value, update, attributes } =
@@ -361,7 +364,9 @@ imageField :
     , value : values -> Image.Model
     , update : Image.Model -> values -> values
     , error : values -> Maybe String
-    , attributes : { label : String }
+    , attributes :
+        { label : String
+        }
     }
     -> Form values output
 imageField { parser, value, update, attributes } =
@@ -391,7 +396,10 @@ datePickerField :
     , value : values -> DatePickerApi.Model
     , update : DatePickerApi.Model -> values -> values
     , error : values -> Maybe String
-    , attributes : { label : String, l10n : DatePickerApi.L10n }
+    , attributes :
+        { label : String
+        , l10n : DatePickerApi.L10n
+        }
     }
     -> Form values output
 datePickerField { parser, value, update, attributes } =
@@ -419,7 +427,10 @@ dateRangePickerField :
     , value : values -> DateRangePickerApi.Model
     , update : DateRangePickerApi.Model -> values -> values
     , error : values -> Maybe String
-    , attributes : { label : String, l10n : DateRangePickerApi.L10n }
+    , attributes :
+        { label : String
+        , l10n : DateRangePickerApi.L10n
+        }
     }
     -> Form values output
 dateRangePickerField { parser, value, update, attributes } =
@@ -955,14 +966,18 @@ type Field values
         }
     | Image
         { attributes :
-            { label : String }
+            { label : String
+            }
         , value : Image.Model
         , getValue : values -> Image.Model
         , update : Image.Model -> values
         , update_ : Image.Model -> values -> values
         }
     | DatePicker
-        { attributes : { label : String, l10n : DatePickerApi.L10n }
+        { attributes :
+            { label : String
+            , l10n : DatePickerApi.L10n
+            }
         , value : DatePickerApi.Model
         , getValue : values -> DatePickerApi.Model
         , update : DatePickerApi.Model -> values
@@ -970,7 +985,9 @@ type Field values
         }
     | DateRangePicker
         { attributes :
-            { label : String, l10n : DateRangePickerApi.L10n }
+            { label : String
+            , l10n : DateRangePickerApi.L10n
+            }
         , value : DateRangePickerApi.Model
         , getValue : values -> DateRangePickerApi.Model
         , update : DateRangePickerApi.Model -> values
