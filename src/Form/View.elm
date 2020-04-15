@@ -856,6 +856,7 @@ form { onSubmit, action, loading, state, fields } =
                     [ Attributes.type_ "submit"
                     , Attributes.disabled (onSubmit == Nothing)
                     , Attributes.class "btn uie-border-black"
+                    , Attributes.attribute "test-id" "submit"
                     ]
                     [ if state == Loading then
                         Html.text loading
