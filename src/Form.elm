@@ -334,6 +334,7 @@ multiselectField :
     , attributes :
         { label : String
         , placeholder : String
+        , testId : String
         }
     }
     -> Form values output
@@ -958,6 +959,7 @@ type Field values
         { attributes :
             { label : String
             , placeholder : String
+            , testId : String
             }
         , value : Multiselect.Model
         , getValue : values -> Multiselect.Model

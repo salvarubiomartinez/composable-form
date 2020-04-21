@@ -335,6 +335,7 @@ type alias MultiselectFieldConfig msg =
     , attributes :
         { label : String
         , placeholder : String
+        , testId : String
         }
     }
 
