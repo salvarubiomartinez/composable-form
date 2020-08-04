@@ -174,6 +174,7 @@ render a [`group`](Form#group) of fields, and a function to wrap the fields toge
 type alias CustomConfig msg element =
     { form : FormConfig msg element -> element
     , textField : TextFieldConfig msg -> element
+    , hiddenField : TextFieldConfig msg -> element
     , emailField : TextFieldConfig msg -> element
     , passwordField : TextFieldConfig msg -> element
     , textareaField : TextFieldConfig msg -> element
@@ -541,6 +542,9 @@ renderField customConfig ({ onChange, onBlur, disabled, showError, multiselectMs
                 Form.TextRaw ->
                     customConfig.textField config
 
+                Form.TextHidden ->
+                    customConfig.hiddenField config
+
                 Form.TextArea ->
                     customConfig.textareaField config
 
@@ -724,6 +728,7 @@ htmlViewConfig : CustomConfig msg (Html msg)
 htmlViewConfig =
     { form = form
     , textField = inputField "text"
+    , hiddenField = hiddenField
     , emailField = inputField "email"
     , passwordField = inputField "password"
     , searchField = inputField "search"
@@ -883,6 +888,20 @@ inputField type_ { onChange, onBlur, disabled, value, error, showError, attribut
         )
         []
         |> withLabelAndError attributes.label showError error
+
+
+hiddenField : TextFieldConfig msg -> Html msg
+hiddenField { onChange, onBlur, disabled, value, error, showError, attributes } =
+    Html.input
+        ([ Events.onInput onChange
+         , Attributes.disabled disabled
+         , Attributes.value value
+         , Attributes.placeholder attributes.placeholder
+         , Attributes.type_ "hidden"
+         ]
+            |> withMaybeAttribute Events.onBlur onBlur
+        )
+        []
 
 
 textareaField : TextFieldConfig msg -> Html msg

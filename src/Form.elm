@@ -3,10 +3,11 @@ module Form exposing
     , textField, emailField, passwordField, textareaField, numberField, rangeField, checkboxField
     , radioField, selectField
     , succeed, append, optional, disable, group, section, andThen, meta, list
-    , map
+    , map, mapValues
     , Field(..), TextType(..), FilledField, fill
     ,  datePickerField
       , dateRangePickerField
+      , hiddenField
       , imageField
       , multiselectField
         --,  mapValues
@@ -151,6 +152,23 @@ textField :
     -> Form values output
 textField =
     TextField.form (Text TextRaw)
+
+
+{-| Create a form that contains a single email field.
+
+It has the same configuration options as [`textField`](#textField).
+
+-}
+hiddenField :
+    { parser : String -> Result String output
+    , value : values -> String
+    , update : String -> values -> values
+    , error : values -> Maybe String
+    , attributes : TextField.Attributes
+    }
+    -> Form values output
+hiddenField =
+    TextField.form (Text TextHidden)
 
 
 {-| Create a form that contains a single email field.
@@ -813,18 +831,14 @@ This can be useful when you need to nest forms:
                 )
 
 -}
-
-
-
---mapValues : { value : a -> b, update : b -> a -> a } -> Form b output -> Form a output
---mapValues { value, update } form =
---    Base.meta
---        (\values ->
---            form
---                |> Base.mapValues value
---                |> Base.mapField (mapFieldValues update values)
---        )
---
+mapValues : { value : a -> b, update : b -> a -> a } -> Form b output -> Form a output
+mapValues { value, update } form =
+    Base.meta
+        (\values ->
+            form
+                |> Base.mapValues value
+                |> Base.mapField (mapFieldValues value update values)
+        )
 
 
 mapFieldValues : (b -> a) -> (a -> b -> b) -> b -> Field a -> Field b
@@ -1004,6 +1018,7 @@ type Field values
 -}
 type TextType
     = TextRaw
+    | TextHidden
     | TextEmail
     | TextPassword
     | TextArea
