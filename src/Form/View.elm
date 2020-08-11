@@ -60,6 +60,7 @@ import Multiselect
 import Set exposing (Set)
 import SpringDesign.Organism.DatePickerInput as DatePickerApi
 import SpringDesign.Organism.DateRangePickerInput as DateRangePickerApi
+import SpringDesign.Organism.FileInput as File
 import SpringDesign.Organism.ImageInput as Image
 
 
@@ -145,6 +146,7 @@ type alias ViewConfig values msg =
     , validation : Validation
     , multiselectMsg : Multiselect.Msg -> (values -> Multiselect.Model) -> (Multiselect.Model -> values -> values) -> msg
     , imageMsg : Image.Msg -> (values -> Image.Model) -> (Image.Model -> values -> values) -> msg
+    , fileMsg : File.Msg -> (values -> File.Model) -> (File.Model -> values -> values) -> msg
     , datePickerMsg : DatePickerApi.Msg -> (values -> DatePickerApi.Model) -> (DatePickerApi.Model -> values -> values) -> msg
     , dateRangePickerMsg : DateRangePickerApi.Msg -> (values -> DateRangePickerApi.Model) -> (DateRangePickerApi.Model -> values -> values) -> msg
     }
@@ -186,6 +188,7 @@ type alias CustomConfig msg element =
     , selectField : SelectFieldConfig msg -> element
     , multiselectField : MultiselectFieldConfig msg -> element
     , imageField : ImageFieldConfig msg -> element
+    , fileField : FileFieldConfig msg -> element
     , datePickerField : DatePickerFieldConfig msg -> element
     , dateRangePickerField : DateRangePickerFieldConfig msg -> element
     , group : List element -> element
@@ -353,6 +356,18 @@ type alias ImageFieldConfig msg =
     }
 
 
+type alias FileFieldConfig msg =
+    { onChange : File.Msg -> msg
+    , value : File.Model
+    , disabled : Bool
+    , error : Maybe Error
+    , showError : Bool
+    , attributes :
+        { label : String
+        }
+    }
+
+
 type alias DatePickerFieldConfig msg =
     { onChange : DatePickerApi.Msg -> msg
     , value : DatePickerApi.Model
@@ -428,7 +443,7 @@ custom :
     -> Form values msg
     -> Model values
     -> element
-custom config { onChange, action, loading, validation, multiselectMsg, imageMsg, datePickerMsg, dateRangePickerMsg } form_ model =
+custom config { onChange, action, loading, validation, multiselectMsg, fileMsg, imageMsg, datePickerMsg, dateRangePickerMsg } form_ model =
     let
         { fields, result } =
             Form.fill form_ model.values
@@ -465,6 +480,7 @@ custom config { onChange, action, loading, validation, multiselectMsg, imageMsg,
                 { onChange = \values -> onChange { model | values = values }
                 , multiselectMsg = multiselectMsg
                 , imageMsg = imageMsg
+                , fileMsg = fileMsg
                 , datePickerMsg = datePickerMsg
                 , dateRangePickerMsg = dateRangePickerMsg
                 , onBlur = onBlur
@@ -510,6 +526,7 @@ type alias FieldConfig values msg =
     , showError : String -> Bool
     , multiselectMsg : Multiselect.Msg -> (values -> Multiselect.Model) -> (Multiselect.Model -> values -> values) -> msg
     , imageMsg : Image.Msg -> (values -> Image.Model) -> (Image.Model -> values -> values) -> msg
+    , fileMsg : File.Msg -> (values -> File.Model) -> (File.Model -> values -> values) -> msg
     , datePickerMsg : DatePickerApi.Msg -> (values -> DatePickerApi.Model) -> (DatePickerApi.Model -> values -> values) -> msg
     , dateRangePickerMsg : DateRangePickerApi.Msg -> (values -> DateRangePickerApi.Model) -> (DateRangePickerApi.Model -> values -> values) -> msg
     }
@@ -520,7 +537,7 @@ renderField :
     -> FieldConfig values msg
     -> Form.FilledField values
     -> element
-renderField customConfig ({ onChange, onBlur, disabled, showError, multiselectMsg, imageMsg, datePickerMsg, dateRangePickerMsg } as fieldConfig) field =
+renderField customConfig ({ onChange, onBlur, disabled, showError, multiselectMsg, imageMsg, fileMsg, datePickerMsg, dateRangePickerMsg } as fieldConfig) field =
     let
         blur label =
             Maybe.map (\onBlurEvent -> onBlurEvent label) onBlur
@@ -624,6 +641,16 @@ renderField customConfig ({ onChange, onBlur, disabled, showError, multiselectMs
         Form.Image { attributes, value, getValue, update, update_ } ->
             customConfig.imageField
                 { onChange = \msg -> imageMsg msg getValue update_
+                , disabled = field.isDisabled || disabled
+                , value = value
+                , error = field.error
+                , showError = showError attributes.label
+                , attributes = attributes
+                }
+
+        Form.File { attributes, value, getValue, update, update_ } ->
+            customConfig.fileField
+                { onChange = \msg -> fileMsg msg getValue update_
                 , disabled = field.isDisabled || disabled
                 , value = value
                 , error = field.error
@@ -740,6 +767,7 @@ htmlViewConfig =
     , selectField = selectField
     , multiselectField = multiselectField
     , imageField = imageField
+    , fileField = fileField
     , datePickerField = datePickerField
     , dateRangePickerField = dateRangePickerField
     , group = group
@@ -1048,6 +1076,14 @@ imageField : ImageFieldConfig msg -> Html msg
 imageField { onChange, value, disabled, error, showError, attributes } =
     (Html.map onChange <|
         Image.imageInput value
+    )
+        |> withLabelAndError attributes.label showError error
+
+
+fileField : FileFieldConfig msg -> Html msg
+fileField { onChange, value, disabled, error, showError, attributes } =
+    (Html.map onChange <|
+        File.fileInput value
     )
         |> withLabelAndError attributes.label showError error
 

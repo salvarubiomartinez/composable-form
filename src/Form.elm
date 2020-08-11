@@ -7,6 +7,7 @@ module Form exposing
     , Field(..), TextType(..), FilledField, fill
     ,  datePickerField
       , dateRangePickerField
+      , fileField
       , hiddenField
       , imageField
       , multiselectField
@@ -69,6 +70,7 @@ import Maybe.Extra as MaybeExtra
 import Multiselect
 import SpringDesign.Organism.DatePickerInput as DatePickerApi
 import SpringDesign.Organism.DateRangePickerInput as DateRangePickerApi
+import SpringDesign.Organism.FileInput as File
 import SpringDesign.Organism.ImageInput as Image
 
 
@@ -406,6 +408,38 @@ imageField { parser, value, update, attributes } =
                 value values
                     |> Image.getImageUrl
                     |> (\image -> MaybeExtra.isNothing image)
+            }
+        )
+
+
+fileField :
+    { parser : File.Model -> Result String output
+    , value : values -> File.Model
+    , update : File.Model -> values -> values
+    , error : values -> Maybe String
+    , attributes :
+        { label : String
+        }
+    }
+    -> Form values output
+fileField { parser, value, update, attributes } =
+    Base.custom
+        (\values ->
+            { state =
+                File
+                    { value = value values
+                    , attributes = attributes
+                    , getValue = value
+                    , update = \value_ -> update value_ values
+                    , update_ = update
+                    }
+            , result =
+                parser (value values)
+                    |> Result.mapError (\error_ -> ( ValidationFailed error_, [] ))
+            , isEmpty =
+                value values
+                    |> File.getFileUrl
+                    |> (\file -> MaybeExtra.isNothing file)
             }
         )
 
@@ -887,6 +921,15 @@ mapFieldValues downdate update values field =
                 , attributes = field_.attributes
                 }
 
+        File field_ ->
+            File
+                { value = field_.value
+                , getValue = downdate >> field_.getValue
+                , update = field_.update >> newUpdate
+                , update_ = \value values_ -> field_.update_ value (downdate values_) |> newUpdate
+                , attributes = field_.attributes
+                }
+
         DatePicker field_ ->
             DatePicker
                 { value = field_.value
@@ -988,6 +1031,15 @@ type Field values
         , getValue : values -> Image.Model
         , update : Image.Model -> values
         , update_ : Image.Model -> values -> values
+        }
+    | File
+        { attributes :
+            { label : String
+            }
+        , value : File.Model
+        , getValue : values -> File.Model
+        , update : File.Model -> values
+        , update_ : File.Model -> values -> values
         }
     | DatePicker
         { attributes :
