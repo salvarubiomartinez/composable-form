@@ -5,7 +5,7 @@ module Form.View exposing
     , custom, CustomConfig, FormConfig, TextFieldConfig, NumberFieldConfig, RangeFieldConfig
     , CheckboxFieldConfig, RadioFieldConfig, SelectFieldConfig
     , FormListConfig, FormListItemConfig
-    , DatePickerFieldConfig, DateRangePickerFieldConfig, ErrorTracking(..), ImageFieldConfig, MultiselectFieldConfig, inputBuilder, maybeErrorMessage, withMaybeAttribute
+    , DatePickerFieldConfig, DateRangePickerFieldConfig, ErrorTracking(..), FileFieldConfig, ImageFieldConfig, MultiselectFieldConfig, inputBuilder, maybeErrorMessage, withMaybeAttribute
     )
 
 {-| This module provides helpers to render a [`Form`](Form#Form).
