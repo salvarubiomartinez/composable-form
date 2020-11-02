@@ -63,5 +63,8 @@ form :
     (TextField values -> field)
     -> Base.FieldConfig Attributes String values output
     -> Base.Form values output field
-form =
-    Base.field { isEmpty = String.isEmpty }
+form fieldType fieldConfig =
+    Base.field
+        { isEmpty = String.trim >> String.isEmpty }
+        fieldType
+        { fieldConfig | parser = String.trim >> fieldConfig.parser }
