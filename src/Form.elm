@@ -355,6 +355,7 @@ multiselectField :
         { label : String
         , placeholder : String
         , testId : String
+        , isDisabled : Bool
         }
     }
     -> Form values output
@@ -1017,6 +1018,7 @@ type Field values
             { label : String
             , placeholder : String
             , testId : String
+            , isDisabled : Bool
             }
         , value : Multiselect.Model
         , getValue : values -> Multiselect.Model

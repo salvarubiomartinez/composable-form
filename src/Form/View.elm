@@ -340,6 +340,7 @@ type alias MultiselectFieldConfig msg =
         { label : String
         , placeholder : String
         , testId : String
+        , isDisabled : Bool
         }
     }
 
